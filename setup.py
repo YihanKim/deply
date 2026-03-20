@@ -1,8 +1,18 @@
-from deply import __version__
-from setuptools import setup, find_packages
+import pathlib
+
+from setuptools import find_packages, setup
+
+__version__ = (
+    (pathlib.Path(__file__).parent / "deply" / "__init__.py")
+    .read_text(encoding="utf-8")
+    .split("__version__ = ")[1]
+    .split("\n")[0]
+    .strip("'\"")
+)
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
+
 
 setup(
     name="deply",
@@ -27,8 +37,8 @@ setup(
         "PyYAML>=5.1",
     ],
     entry_points={
-        'console_scripts': [
-            'deply=deply.main:main',
+        "console_scripts": [
+            "deply=deply.main:main",
         ],
     },
     include_package_data=True,
