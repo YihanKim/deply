@@ -2,10 +2,10 @@ import ast
 import unittest
 
 from deply.utils.ast_utils import (
-    get_import_aliases,
+    get_annotation_name,
     get_base_name,
     get_decorator_name,
-    get_annotation_name,
+    get_import_aliases,
     set_ast_parents,
 )
 
@@ -42,6 +42,19 @@ from collections import defaultdict
         expr = ast.parse("x.y", mode="eval").body  # returns an Attribute node
         result = get_base_name(expr, import_aliases)
         self.assertEqual(result, "mod.x.y")
+
+    def test_get_base_name_with_generic_subscript(self):
+        # Generic base class syntax: ParentClass[SomeType] — should return the outer class name
+        expr = ast.parse("ParentClass[SomeType]", mode="eval").body  # Subscript node
+        result = get_base_name(expr, {})
+        self.assertEqual(result, "ParentClass")
+
+    def test_get_base_name_with_generic_subscript_and_alias(self):
+        # Aliased generic: Base[int] where Base is imported as module.Base
+        import_aliases = {"Base": "module.Base"}
+        expr = ast.parse("Base[int]", mode="eval").body
+        result = get_base_name(expr, import_aliases)
+        self.assertEqual(result, "module.Base")
 
     def test_get_decorator_name_name(self):
         # Test a simple decorator: @mydecorator

@@ -99,6 +99,25 @@ class TestCollectors(unittest.TestCase):
         expected_classes = {'UserModel'}
         self.assertEqual(collected_class_names, expected_classes)
 
+    def test_class_inherits_collector_generic_syntax(self):
+        # Python 3.12+ generic syntax: class Child(Base[SomeType])
+        generic_model_py = self.test_project_dir / 'models' / 'generic_model.py'
+        generic_model_py.write_text(
+            'from typing import TypeVar\n'
+            'T = TypeVar("T")\n'
+            'class GenericChild(BaseModel[T]):\n'
+            '    pass\n'
+            'class DoubleGeneric(BaseModel[T, int]):\n'
+            '    pass\n'
+        )
+        collector_config = {'base_class': 'BaseModel'}
+        paths = [str(self.test_project_dir)]
+        collector = ClassInheritsCollector(collector_config)
+        collected_elements = self.run_collector(collector, paths, [])
+        collected_class_names = {element.name for element in collected_elements}
+        self.assertIn('GenericChild', collected_class_names)
+        self.assertIn('DoubleGeneric', collected_class_names)
+
     def test_file_regex_collector(self):
         collector_config = {
             'regex': r'.*controller.py$',

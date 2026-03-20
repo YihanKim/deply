@@ -25,6 +25,9 @@ def get_base_name(node: ast.AST, import_aliases: Dict[str, str]) -> str:
     elif isinstance(node, ast.Attribute):
         value = get_base_name(node.value, import_aliases)
         return f"{value}.{node.attr}" if value else node.attr
+    elif isinstance(node, ast.Subscript):
+        # Generic syntax: GenericClass[T]
+        return get_base_name(node.value, import_aliases)
     else:
         return ''
 
